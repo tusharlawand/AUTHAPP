@@ -1,6 +1,6 @@
-import React, {createContext, useState, useEffect, ReactNode} from "react"
+import React, { createContext, useState, useEffect, ReactNode } from "react"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import {User, AuthContextType} from "../types/AuthTypes"
+import { User, AuthContextType } from "../types/AuthTypes"
 
 interface Props {
   children: ReactNode
@@ -8,54 +8,58 @@ interface Props {
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType)
 
-export const AuthProvider: React.FC<Props> = ({children}) => {
+export const AuthProvider: React.FC<Props> = ({ children }) => {
 
   const [user, setUser] = useState<User | null>(null)
 
-  useEffect(()=>{
-    loadUser()
-  },[])
+ useEffect(() => {
+  loadUser()
+}, [])
 
-  const loadUser = async () => {
-    const storedUser = await AsyncStorage.getItem("user")
+const loadUser = async () => {
+  const storedUser = await AsyncStorage.getItem('authUser')
 
-    if(storedUser){
-      setUser(JSON.parse(storedUser))
-    }
+  if (storedUser) {
+    setUser(JSON.parse(storedUser))
   }
+}
 
-  const login = async (email:string,password:string) => {
+  const login = async (email: string, password: string) => {
+    const storedUser = await AsyncStorage.getItem('userData')
 
-    const storedUser = await AsyncStorage.getItem("user")
-
-    if(!storedUser){
+    if (!storedUser) {
       throw "User not found"
     }
 
-    const parsed:User = JSON.parse(storedUser)
+    const parsedUser = JSON.parse(storedUser)
 
-    if(parsed.email === email && parsed.password === password){
-      setUser(parsed)
-    }else{
+    if (parsedUser.email === email && parsedUser.password === password) {
+      setUser(parsedUser)
+
+      await AsyncStorage.setItem('authUser', JSON.stringify(parsedUser))
+    } else {
       throw "Invalid credentials"
     }
   }
 
-  const signup = async (name:string,email:string,password:string) => {
+  const signup = async (name: string, email: string, password: string) => {
+    const newUser = { name, email, password }
 
-    const newUser:User = {name,email,password}
-
-    await AsyncStorage.setItem("user",JSON.stringify(newUser))
+    await AsyncStorage.setItem('userData', JSON.stringify(newUser))
 
     setUser(newUser)
-  }
 
-  const logout = () => {
-    setUser(null)
+    await AsyncStorage.setItem('authUser', JSON.stringify(newUser))
   }
+  
 
-  return(
-    <AuthContext.Provider value={{user,login,signup,logout}}>
+ const logout = async () => {
+  await AsyncStorage.removeItem('authUser')
+  setUser(null)
+}
+
+  return (
+    <AuthContext.Provider value={{ user, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   )
