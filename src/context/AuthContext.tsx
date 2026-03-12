@@ -1,60 +1,43 @@
-import React, {createContext, useState, useEffect, ReactNode} from 'react'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import React, {createContext, useState, useEffect, ReactNode} from "react"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import {User, AuthContextType} from "../types/AuthTypes"
 
-interface User {
-  name: string
-  email: string
-  password: string
-}
-
-interface AuthContextType {
-  user: User | null
-  login: (email:string,password:string)=>Promise<void>
-  signup: (name:string,email:string,password:string)=>Promise<void>
-  logout: ()=>Promise<void>
+interface Props {
+  children: ReactNode
 }
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType)
 
-export const AuthProvider = ({children}:{children:ReactNode}) => {
+export const AuthProvider: React.FC<Props> = ({children}) => {
 
-  const [user,setUser] = useState<User | null>(null)
-  const [loading,setLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(()=>{
     loadUser()
   },[])
 
   const loadUser = async () => {
-    try{
-      const storedUser = await AsyncStorage.getItem('user')
+    const storedUser = await AsyncStorage.getItem("user")
 
-      if(storedUser){
-        setUser(JSON.parse(storedUser))
-      }
-    }
-    catch(e){
-      console.log(e)
-    }
-    finally{
-      setLoading(false)
+    if(storedUser){
+      setUser(JSON.parse(storedUser))
     }
   }
 
   const login = async (email:string,password:string) => {
 
-    const storedUser = await AsyncStorage.getItem('user')
+    const storedUser = await AsyncStorage.getItem("user")
 
     if(!storedUser){
       throw "User not found"
     }
 
-    const parsedUser:User = JSON.parse(storedUser)
+    const parsed:User = JSON.parse(storedUser)
 
-    if(parsedUser.email === email && parsedUser.password === password){
-      setUser(parsedUser)
+    if(parsed.email === email && parsed.password === password){
+      setUser(parsed)
     }else{
-      throw "Incorrect credentials"
+      throw "Invalid credentials"
     }
   }
 
@@ -62,20 +45,13 @@ export const AuthProvider = ({children}:{children:ReactNode}) => {
 
     const newUser:User = {name,email,password}
 
-    await AsyncStorage.setItem('user', JSON.stringify(newUser))
+    await AsyncStorage.setItem("user",JSON.stringify(newUser))
 
     setUser(newUser)
   }
 
-  const logout = async () => {
-
-    await AsyncStorage.removeItem('user')
-
+  const logout = () => {
     setUser(null)
-  }
-
-  if(loading){
-    return null
   }
 
   return(

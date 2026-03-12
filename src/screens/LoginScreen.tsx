@@ -1,136 +1,137 @@
-import React, { useState, useContext } from 'react'
+import React, {useState, useContext} from 'react'
 import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet
 } from 'react-native'
-import { AuthContext } from '../context/AuthContext'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { RootStackParamList } from '../navigation/AppNavigator'
+import {AuthContext} from '../context/AuthContext'
+import {NativeStackNavigationProp} from '@react-navigation/native-stack'
+import {RootStackParamList} from '../navigation/AppNavigator'
+
 type LoginScreenNavigationProp =
-    NativeStackNavigationProp<RootStackParamList, 'Login'>
+  NativeStackNavigationProp<RootStackParamList, 'Login'>
 
 type Props = {
-    navigation: LoginScreenNavigationProp
+  navigation: LoginScreenNavigationProp
 }
 
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
+const LoginScreen: React.FC<Props> = ({navigation}) => {
 
-    const { login } = useContext(AuthContext)
+  const {login} = useContext(AuthContext)
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [error, setError] = useState('')
+  const [email,setEmail] = useState('')
+  const [password,setPassword] = useState('')
+  const [error,setError] = useState('')
 
-    const validateEmail = (email: string) => {
-        const regex = /\S+@\S+\.\S+/
-        return regex.test(email)
+  const validateEmail = (email:string) => {
+    const regex = /\S+@\S+\.\S+/
+    return regex.test(email)
+  }
+
+  const handleLogin = async () => {
+
+    setError('')
+
+    if(!email || !password){
+      setError('Email and Password are required')
+      return
     }
 
-    const handleLogin = async () => {
-
-        setError('')
-
-        if (!email || !password) {
-            setError('Email and Password are required')
-            return
-        }
-
-        if (!validateEmail(email)) {
-            setError('Invalid email format')
-            return
-        }
-
-        try {
-            await login(email, password)
-        } catch (e: any) {
-            setError('Incorrect credentials')
-        }
+    if(!validateEmail(email)){
+      setError('Invalid email format')
+      return
     }
 
-    return (
-        <View style={styles.container}>
+    try{
+      await login(email,password)
+    }catch(e:any){
+      setError('Incorrect credentials')
+    }
+  }
 
-            <Text style={styles.title}>Login</Text>
+  return(
+    <View style={styles.container}>
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+      <Text style={styles.title}>Login</Text>
 
-            <TextInput
-                placeholder="Email"
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-            />
+      {error ? <Text style={styles.error}>{error}</Text> : null}
 
-            <View style={styles.input}>
-                <TextInput
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                />
-            </View>
+      <TextInput
+        placeholder="Email"
+        style={styles.input}
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+      />
 
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                <Text style={styles.buttonText}>Login</Text>
-            </TouchableOpacity>
+      <TextInput
+        placeholder="Password"
+        secureTextEntry
+        style={styles.input}
+        value={password}
+        onChangeText={setPassword}
+      />
 
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-                <Text style={styles.link}>Go to Signup</Text>
-            </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
 
-        </View>
-    )
+      <TouchableOpacity onPress={()=>navigation.navigate('Signup')}>
+        <Text style={styles.link}>Go to Signup</Text>
+      </TouchableOpacity>
+
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
 
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        padding: 20
-    },
+  container:{
+    flex:1,
+    justifyContent:'center',
+    padding:20
+  },
 
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center'
-    },
+  title:{
+    fontSize:28,
+    fontWeight:'bold',
+    marginBottom:20,
+    textAlign:'center'
+  },
 
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        padding: 12,
-        marginBottom: 12,
-        borderRadius: 6
-    },
+  input:{
+    borderWidth:1,
+    borderColor:'#ccc',
+    padding:12,
+    marginBottom:12,
+    borderRadius:6
+  },
 
-    button: {
-        backgroundColor: '#007BFF',
-        padding: 14,
-        borderRadius: 6,
-        alignItems: 'center'
-    },
+  button:{
+    backgroundColor:'#007BFF',
+    padding:14,
+    borderRadius:6,
+    alignItems:'center'
+  },
 
-    buttonText: {
-        color: '#fff',
-        fontWeight: 'bold'
-    },
+  buttonText:{
+    color:'#fff',
+    fontWeight:'bold'
+  },
 
-    error: {
-        color: 'red',
-        marginBottom: 10,
-        textAlign: 'center'
-    },
+  error:{
+    color:'red',
+    marginBottom:10,
+    textAlign:'center'
+  },
 
-    link: {
-        marginTop: 20,
-        textAlign: 'center',
-        color: 'blue'
-    }
+  link:{
+    marginTop:20,
+    textAlign:'center',
+    color:'blue'
+  }
 
 })
 
